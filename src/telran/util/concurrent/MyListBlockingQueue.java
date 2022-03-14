@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 
 public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 	// TODO fields of the class
+	// V.R. Queu<E> looks more naturally
 	private LinkedList<E> listQueue = new LinkedList<>();;
 	int queueLimit = Integer.MAX_VALUE;
 	private Lock monitor = new ReentrantLock();;
@@ -33,6 +34,7 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 			throw new NoSuchElementException();
 		}
 		try {
+			// V.R. removeFirst() throws NoSuchElementException - if this list is empty
 			return listQueue.removeFirst();
 		} finally {
 			monitor.unlock();
@@ -58,6 +60,7 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 			if (listQueue.isEmpty()) {
 				throw new NoSuchElementException();
 			}
+			// V.R. getFirst() throws NoSuchElementException - if this list is empty
 			return listQueue.getFirst();
 		} finally {
 			monitor.unlock();
@@ -80,6 +83,7 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 		// TODO done
 		monitor.lock();
 		try {
+			// V.R. Is it possible to do the same without lock?
 			return listQueue.size();
 		} finally {
 			monitor.unlock();
@@ -184,7 +188,8 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 				try {
 					producerWaiting.await();
 				} catch (InterruptedException m) {
-
+					// V.R. May be break is suitable here?
+					// It is impossible to leave the cycle without break
 				}
 			}
 			listQueue.add(e);
@@ -201,6 +206,8 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 		try {
 			while (listQueue.size() == queueLimit) {
 				try {
+					// V.R. It doesn't work in case of time is elapsed
+					// await() returns false in case of timeout
 					producerWaiting.await(timeout, unit);
 				} catch (InterruptedException m) {
 					return false;
@@ -241,6 +248,7 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 		try {
 			while (listQueue.isEmpty()) {
 				try {
+					// V.R. It doesn't work in case of time is elapsed
 					cunsumerWaiting.await(timeout, unit);
 				} catch (InterruptedException m) {
 					return null;
@@ -258,6 +266,7 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 	public int remainingCapacity() {
 		// TODO done
 		monitor.lock();
+		// V.R. Is it possible to do the same without lock?
 		try {
 			return queueLimit - listQueue.size();
 		} finally {
@@ -289,9 +298,11 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 
 	@Override
 	public int drainTo(Collection<? super E> c) {
+		// V.R. The implementation isn't requested
 		//TODO done
 		Lock collLock = new ReentrantLock();
 		monitor.lock();
+		// V.R. This lock does nothing
 		collLock.lock();
 		try {
 			int res = listQueue.size();
@@ -306,9 +317,11 @@ public class MyListBlockingQueue<E> implements BlockingQueue<E> {
 
 	@Override
 	public int drainTo(Collection<? super E> c, int maxElements) {
+		// V.R. The implementation isn't requested
 		//TODO done
 		Lock collLock = new ReentrantLock();
 		monitor.lock();
+		// V.R. This lock does nothing
 		collLock.lock();
 		try {
 			if (listQueue.size() <= maxElements) {
